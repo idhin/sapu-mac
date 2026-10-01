@@ -166,6 +166,7 @@ Menghapus hal yang salah adalah satu-satunya kesalahan yang tidak boleh dilakuka
 make build      # release build di .build/release/sapu
 make test       # unit test (membuat dan membandingkan file sungguhan di folder temp)
 make dist       # binary universal + tarball di dist/
+make release    # tes, build, dan terbitkan versi saat ini sebagai rilis GitHub
 ```
 
 Kode dibagi menjadi `SapuCore` (scanner, pencari duplikat, aturan junk, aksi; tanpa kode terminal) dan `sapu` (antarmuka command line). Aturan junk ada di [`Sources/SapuCore/Junk/JunkRules.swift`](Sources/SapuCore/Junk/JunkRules.swift): menambah folder build atau lokasi cache cukup beberapa baris, dan pull request untuk tool yang belum tercakup sangat diterima.

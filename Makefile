@@ -13,7 +13,7 @@ TEST_FLAGS := -Xswiftc -F -Xswiftc $(CLT)/Library/Developer/Frameworks \
 	-Xlinker -rpath -Xlinker $(CLT)/Library/Developer/usr/lib
 endif
 
-.PHONY: build test install uninstall dist clean
+.PHONY: build test install uninstall dist release clean
 
 build:
 	swift build -c release
@@ -28,7 +28,7 @@ install: build
 uninstall:
 	rm -f $(PREFIX)/bin/sapu
 
-# A universal (Apple silicon + Intel) binary, packed the way the release workflow publishes it.
+# A universal (Apple silicon + Intel) binary and its tarball.
 dist:
 	swift build -c release --triple arm64-apple-macosx
 	swift build -c release --triple x86_64-apple-macosx
@@ -39,6 +39,17 @@ dist:
 	tar -C dist -czf $(DIST).tar.gz $(notdir $(DIST))
 	cd dist && shasum -a 256 $(notdir $(DIST)).tar.gz > $(notdir $(DIST)).tar.gz.sha256
 	@echo "Built $(DIST).tar.gz"
+
+# Tests, builds and publishes v$(VERSION) as a GitHub release (needs the gh command-line tool).
+# The archive is uploaded a second time under a fixed name, which is what install.sh downloads.
+release: test dist
+	cp $(DIST).tar.gz dist/sapu-macos-universal.tar.gz
+	cd dist && shasum -a 256 sapu-macos-universal.tar.gz > sapu-macos-universal.tar.gz.sha256
+	git tag -a v$(VERSION) -m "sapu mac $(VERSION)"
+	git push origin v$(VERSION)
+	gh release create v$(VERSION) --title "sapu mac $(VERSION)" --generate-notes \
+		$(DIST).tar.gz $(DIST).tar.gz.sha256 \
+		dist/sapu-macos-universal.tar.gz dist/sapu-macos-universal.tar.gz.sha256
 
 clean:
 	swift package clean

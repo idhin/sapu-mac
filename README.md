@@ -215,6 +215,7 @@ Removing the wrong thing is the one mistake a cleaner must not make. These rules
 make build      # release build in .build/release/sapu
 make test       # unit tests (they create and compare real files in a temp folder)
 make dist       # universal binary + tarball in dist/
+make release    # test, build and publish the current version as a GitHub release
 ```
 
 The code is split into `SapuCore` (scanner, duplicate finder, junk rules, actions; no terminal code) and `sapu` (the command-line interface). Junk rules live in [`Sources/SapuCore/Junk/JunkRules.swift`](Sources/SapuCore/Junk/JunkRules.swift): adding a build folder or a cache location is a few lines, and pull requests for tools that are missing are welcome.
