@@ -29,6 +29,9 @@ jobs:
           # A stable file name lets install.sh always fetch the latest release.
           cp sapu-*-macos-universal.tar.gz sapu-macos-universal.tar.gz
           shasum -a 256 sapu-macos-universal.tar.gz > sapu-macos-universal.tar.gz.sha256
-          gh release create "$GITHUB_REF_NAME" --generate-notes \
-            sapu-*-macos-universal.tar.gz sapu-*-macos-universal.tar.gz.sha256 \
-            sapu-macos-universal.tar.gz sapu-macos-universal.tar.gz.sha256
+          # The release may already exist (created by hand, or by an earlier run of this job).
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" --clobber sapu-*.tar.gz sapu-*.tar.gz.sha256
+          else
+            gh release create "$GITHUB_REF_NAME" --generate-notes sapu-*.tar.gz sapu-*.tar.gz.sha256
+          fi
