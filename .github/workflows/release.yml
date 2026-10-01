@@ -1,0 +1,34 @@
+name: Release
+
+# Pushing a tag such as v0.1.0 builds a universal binary and attaches it to a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that the tag matches the version in the source
+        run: |
+          version=$(sed -n 's/^let version = "\(.*\)"/\1/p' Sources/sapu/main.swift)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME does not match version $version"; exit 1; }
+      - name: Test
+        run: make test
+      - name: Build universal binary
+        run: make dist
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          # A stable file name lets install.sh always fetch the latest release.
+          cp sapu-*-macos-universal.tar.gz sapu-macos-universal.tar.gz
+          shasum -a 256 sapu-macos-universal.tar.gz > sapu-macos-universal.tar.gz.sha256
+          gh release create "$GITHUB_REF_NAME" --generate-notes \
+            sapu-*-macos-universal.tar.gz sapu-*-macos-universal.tar.gz.sha256 \
+            sapu-macos-universal.tar.gz sapu-macos-universal.tar.gz.sha256
